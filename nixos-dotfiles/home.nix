@@ -1,5 +1,30 @@
 { config, pkgs, zen-browser, hermes-agent, ... }:
 
+let
+  # Temporary packaging bridge: upstream's Nix wheel currently omits these
+  # standalone modules although hermes_state.py imports them.
+  hermesStateSupport = pkgs.python312Packages.buildPythonPackage {
+    pname = "hermes-state-support";
+    version = "0.0.0";
+    pyproject = true;
+    src = pkgs.runCommand "hermes-state-support-src" {} ''
+      mkdir -p $out
+      cp ${hermes-agent.outPath}/hermes_state_holders.py $out/
+      cp ${hermes-agent.outPath}/hermes_state_registry.py $out/
+      printf '%s\n' \
+        '[build-system]' \
+        'requires = ["setuptools"]' \
+        'build-backend = "setuptools.build_meta"' \
+        '[project]' \
+        'name = "hermes-state-support"' \
+        'version = "0.0.0"' \
+        '[tool.setuptools]' \
+        'py-modules = ["hermes_state_holders", "hermes_state_registry"]' \
+        > $out/pyproject.toml
+    '';
+    build-system = [ pkgs.python312Packages.setuptools ];
+  };
+in
 {
   home.username = "axel";
   home.homeDirectory = "/home/axel";
@@ -283,7 +308,14 @@
     pandoc
 
     # Programmazione generale
-    hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default
+    (hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+      postFixup = (old.postFixup or "") + ''
+        for program in hermes hermes-agent hermes-acp; do
+          wrapProgram "$out/bin/$program" \
+            --prefix PYTHONPATH : "${hermesStateSupport}/${pkgs.python312.sitePackages}"
+        done
+      '';
+    }))
     codex
     nil
     gcc
