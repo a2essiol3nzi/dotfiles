@@ -58,4 +58,4 @@ These dotfiles are organized to be easily managed.
 I (finally) managed to compress my [wallpapers](wallpapers). So, enjoy!
 
 ---
-*Stay Minimal.*
+*Stay Hungry.*
