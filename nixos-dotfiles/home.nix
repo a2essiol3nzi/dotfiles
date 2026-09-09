@@ -320,6 +320,12 @@ in
     nil
     gcc
     gnumake
+    cmake
+    ninja
+    cereal
+    openmpi
+    pkg-config
+    bear
     python3
     pyright
     jdk
