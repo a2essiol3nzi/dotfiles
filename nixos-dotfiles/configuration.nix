@@ -1,5 +1,8 @@
 { config, lib, pkgs, zen-browser, ... }:
 
+let
+  connectTunnel = pkgs.callPackage ./connect-tunnel.nix { };
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -133,6 +136,18 @@
   # Necessario per molte operazioni in Wayland (mount, poweroff, ecc.)
   security.polkit.enable = true;
 
+  # Il client Java esegue questo solo binario privilegiato per creare il tunnel.
+  security.wrappers.AvConnect = {
+    source = "${connectTunnel}/libexec/AvConnect.bin";
+    owner = "root";
+    group = "root";
+    capabilities = "cap_net_admin,cap_dac_override+ep";
+  };
+
+  # Il client upstream cerca questi percorsi assoluti; sono link della generazione
+  # NixOS corrente, non file installati in /usr/local.
+  environment.pathsToLink = [ "/libexec" ];
+
   # ── Utente ──────────────────────────────────────────────────────────────────
 
   programs.zsh.enable = true;
@@ -166,6 +181,7 @@
     upower
     nftables
     discord-ptb
+    connectTunnel
   ];
 
   services.upower.enable = true;
