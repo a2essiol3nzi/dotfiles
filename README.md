@@ -43,7 +43,6 @@ This repository includes configurations for:
   - `swaybg`, `swayidle`, `swaylock` (Wayland session management)
 - **Others**: `fontconfig`, `fastfetch`, `brightnessctl`
 - **Scripts**:
-  - [`dotInstall.sh`](./dotInstall.sh) (Automated symlink installation)
   - [`compress_walls.sh`](./compress_walls.sh) (Wallpaper optimization)
 
 ## 🚀 Installation
@@ -58,4 +57,4 @@ These dotfiles are organized to be easily managed.
 I (finally) managed to compress my [wallpapers](wallpapers). So, enjoy!
 
 ---
-*Stay Hungry.*
+*Declare and forget.*
