@@ -6,7 +6,7 @@
 # Appearance and Theming #
 #========================#
 include $HOME/.cache/wallust/colors-sway
-set $wallpaper /home/axel/Pictures/Wallpapers/beach.jpg
+set $wallpaper /home/axel/Pictures/Wallpapers/art/full-fallen-angel.jpg
 # Declare Colors:
 set $color_urgent #fb4934
 
@@ -18,8 +18,8 @@ client.unfocused        $color8             $background         $foreground     
 client.urgent           $color_urgent       $color_urgent       $color_urgent   $color_urgent       $color_urgent
 
 # Add gaps in between all application windows:
-gaps inner 3
-gaps outer 3
+gaps inner 0
+gaps outer 0
 
 # Configure the default border:
 default_border pixel 2
@@ -52,10 +52,8 @@ output HDMI-A-1 {
 #====================================#
 # Activate the panel                 #
 #====================================#
-# Set the waybar command for the application launcher:
-bar {
-    swaybar_command waybar
-}
+# Launch waybar directly (swaybar_command can't pass -c to waybar)
+exec waybar -c $HOME/.config/sway/waybar/sway-dwl/config.jsonc -s $HOME/.config/sway/waybar/sway-dwl/style.css
 
 
 #====================================#
@@ -258,7 +256,7 @@ bindsym $mod+Shift+e exec "swaymsg output eDP-1 enable"
 # Keyboard Shortcuts (launching applications) #
 #=============================================#
 # Set up bemenu to replace dmenu as the launcher of choice:
-set $menucmd bemenu-run -i -l '10 down' -p Run:
+set $menucmd bemenu-run -i --hp 7 -b -p bemenu-run:
 bindsym Mod4+p exec $menucmd
 
 # Close focused window:
