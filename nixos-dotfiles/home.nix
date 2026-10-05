@@ -24,6 +24,59 @@ let
     '';
     build-system = [ pkgs.python312Packages.setuptools ];
   };
+
+  visualParadigmPayload = pkgs.stdenvNoCC.mkDerivation {
+    pname = "visual-paradigm";
+    version = "18.1";
+    src = pkgs.fetchurl {
+      url = "https://www.visual-paradigm.com/downloads/vpce/Visual_Paradigm_CE_Linux64_InstallFree.tar.gz";
+      hash = "sha256-/1gPFfzO0ee1sXgxAjDY3CKpsY6XJtOp96L2KEZHHYo=";
+    };
+    sourceRoot = "Visual_Paradigm_CE_18.1";
+
+    installPhase = ''
+      mkdir -p $out/lib
+      cp -r . $out/lib/visual-paradigm
+      chmod +x $out/lib/visual-paradigm/Application/scripts/VisualParadigm.sh
+    '';
+  };
+
+  visualParadigm = pkgs.buildFHSEnv {
+    name = "visual-paradigm";
+    targetPkgs = pkgs: with pkgs; [
+      alsa-lib
+      fontconfig
+      freetype
+      libGL
+      libX11
+      libXext
+      libXi
+      libXrender
+      libXtst
+      libxkbcommon
+      nss
+      zlib
+    ];
+    runScript = pkgs.writeShellScript "visual-paradigm-launch" ''
+      cd ${visualParadigmPayload}/lib/visual-paradigm/Application/scripts
+      exec ./VisualParadigm.sh "$@"
+    '';
+    extraInstallCommands = ''
+      mkdir -p $out/share/applications
+      cat > $out/share/applications/visual-paradigm.desktop <<'EOF'
+      [Desktop Entry]
+      Type=Application
+      Name=Visual Paradigm
+      Exec=visual-paradigm
+      Categories=Development;Graphics;
+      EOF
+    '';
+
+    meta = {
+      license = pkgs.lib.licenses.unfree;
+      platforms = [ "x86_64-linux" ];
+    };
+  };
 in
 {
   home.username = "axel";
@@ -84,6 +137,9 @@ in
       kicat  = "kitten icat";
       kifont = "kitty +list-fonts --full-name";
       ssh    = "kitty +kitten ssh";
+
+      # study
+      study = "cd ~/Universita/StudyVault/";
     };
 
     # ── Completamenti e setopt ──────────────────────────────────────────────────
@@ -200,6 +256,7 @@ in
     _JAVA_AWT_WM_NONREPARENTING = "1"; # fix per app Java (es. IntelliJ) in WM non-reparenting
     EDITOR = "hx";                   # imposta helix come editor di default
     SHELL = "${pkgs.zsh}/bin/zsh";   # imposta zsh come shell di default per la sessione
+    CEREAL_HOME = "${pkgs.cereal}";  # root della libreria header-only Cereal
     XCURSOR_THEME = "Bibata-Modern-Ice";
     XCURSOR_SIZE = 20;             # applicazione corretta cursore
   };
@@ -271,7 +328,7 @@ in
     # Editor
     kitty
     helix
-    pkgs.vscodium
+    # pkgs.vscodium
 
     # Wayland ecosystem
     swaybg
@@ -307,6 +364,9 @@ in
     typst
     pandoc
 
+    # Progettazione di sistemi
+    visualParadigm
+
     # Programmazione generale
     (hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
       postFixup = (old.postFixup or "") + ''
@@ -326,10 +386,11 @@ in
     openmpi
     pkg-config
     bear
+    uv
     python3
     pyright
     jdk
-    jdt-language-server
+    # jdt-language-server
     tinymist
     clang-tools
   ];

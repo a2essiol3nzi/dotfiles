@@ -89,6 +89,7 @@ in
         command = ''
           ${pkgs.tuigreet}/bin/tuigreet \
             --time \
+            --cmd sway \
             --sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions
         '';
         user = "greeter";
@@ -135,6 +136,14 @@ in
   # Polkit gestisce le autorizzazioni privilegiate in ambienti senza DE
   # Necessario per molte operazioni in Wayland (mount, poweroff, ecc.)
   security.polkit.enable = true;
+
+  # Consente a btop di leggere i contatori prestazionali della GPU
+  security.wrappers.btop = {
+    source = "${pkgs.btop}/bin/btop";
+    owner = "root";
+    group = "root";
+    capabilities = "cap_perfmon+ep";
+  };
 
   # Il client Java esegue questo solo binario privilegiato per creare il tunnel.
   security.wrappers.AvConnect = {
