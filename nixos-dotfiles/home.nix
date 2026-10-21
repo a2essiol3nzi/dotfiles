@@ -29,8 +29,8 @@ let
     pname = "visual-paradigm";
     version = "18.1";
     src = pkgs.fetchurl {
-      url = "https://www.visual-paradigm.com/downloads/vpce/Visual_Paradigm_CE_Linux64_InstallFree.tar.gz";
-      hash = "sha256-/1gPFfzO0ee1sXgxAjDY3CKpsY6XJtOp96L2KEZHHYo=";
+      url = "https://eu10-dl.visual-paradigm.com/visual-paradigm/vpce18.1/20261011/Visual_Paradigm_CE_18_1_20261011_Linux64_InstallFree.tar.gz";
+      hash = "sha256-iwFnV1Mc6X/pZdKfc4c/b9bIHKsQiNZ0uWGZsUQVFWQ=";
     };
     sourceRoot = "Visual_Paradigm_CE_18.1";
 
