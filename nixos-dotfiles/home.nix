@@ -1,82 +1,20 @@
-{ config, pkgs, zen-browser, hermes-agent, ... }:
+{ pkgs, zen-browser, hermes-agent, ... }:
 
 let
-  # Temporary packaging bridge: upstream's Nix wheel currently omits these
-  # standalone modules although hermes_state.py imports them.
-  hermesStateSupport = pkgs.python312Packages.buildPythonPackage {
-    pname = "hermes-state-support";
-    version = "0.0.0";
-    pyproject = true;
-    src = pkgs.runCommand "hermes-state-support-src" {} ''
-      mkdir -p $out
-      cp ${hermes-agent.outPath}/hermes_state_holders.py $out/
-      cp ${hermes-agent.outPath}/hermes_state_registry.py $out/
-      printf '%s\n' \
-        '[build-system]' \
-        'requires = ["setuptools"]' \
-        'build-backend = "setuptools.build_meta"' \
-        '[project]' \
-        'name = "hermes-state-support"' \
-        'version = "0.0.0"' \
-        '[tool.setuptools]' \
-        'py-modules = ["hermes_state_holders", "hermes_state_registry"]' \
-        > $out/pyproject.toml
-    '';
-    build-system = [ pkgs.python312Packages.setuptools ];
-  };
+  enableVisualParadigm = true;
+  visualParadigm = import ./packages/visual-paradigm.nix { inherit pkgs; };
 
-  visualParadigmPayload = pkgs.stdenvNoCC.mkDerivation {
-    pname = "visual-paradigm";
-    version = "18.1";
-    src = pkgs.fetchurl {
-      url = "https://eu10-dl.visual-paradigm.com/visual-paradigm/vpce18.1/20261011/Visual_Paradigm_CE_18_1_20261011_Linux64_InstallFree.tar.gz";
-      hash = "sha256-iwFnV1Mc6X/pZdKfc4c/b9bIHKsQiNZ0uWGZsUQVFWQ=";
-    };
-    sourceRoot = "Visual_Paradigm_CE_18.1";
+  enableCodex = true;
+  codexPackage = import ./packages/codex.nix { inherit pkgs; };
 
-    installPhase = ''
-      mkdir -p $out/lib
-      cp -r . $out/lib/visual-paradigm
-      chmod +x $out/lib/visual-paradigm/Application/scripts/VisualParadigm.sh
-    '';
-  };
-
-  visualParadigm = pkgs.buildFHSEnv {
-    name = "visual-paradigm";
-    targetPkgs = pkgs: with pkgs; [
-      alsa-lib
-      fontconfig
-      freetype
-      libGL
-      libX11
-      libXext
-      libXi
-      libXrender
-      libXtst
-      libxkbcommon
-      nss
-      zlib
-    ];
-    runScript = pkgs.writeShellScript "visual-paradigm-launch" ''
-      cd ${visualParadigmPayload}/lib/visual-paradigm/Application/scripts
-      exec ./VisualParadigm.sh "$@"
-    '';
-    extraInstallCommands = ''
-      mkdir -p $out/share/applications
-      cat > $out/share/applications/visual-paradigm.desktop <<'EOF'
-      [Desktop Entry]
-      Type=Application
-      Name=Visual Paradigm
-      Exec=visual-paradigm
-      Categories=Development;Graphics;
-      EOF
-    '';
-
-    meta = {
-      license = pkgs.lib.licenses.unfree;
-      platforms = [ "x86_64-linux" ];
-    };
-  };
+  # helium = pkgs.appimageTools.wrapType2 {
+  #   pname = "helium";
+  #   version = "0.19.4.1";
+  #   src = pkgs.fetchurl {
+  #     url = "https://github.com/imputnet/helium-linux/releases/download/0.19.4.1/helium-0.19.4.1-x86_64.AppImage";
+  #     hash = "sha256-Wy2zkrPth/JKqESTYFnWisqYvCBUjqqg3s+jwoCioKc=";
+  #   };
+  # };
 in
 {
   home.username = "axel";
@@ -119,7 +57,7 @@ in
       # NixOS
       nrs = "sudo nixos-rebuild switch --flake ~/Projects/Dotfiles/nixos-dotfiles#ZeNix";
       nrb = "sudo nixos-rebuild boot --flake ~/Projects/Dotfiles/nixos-dotfiles#ZeNix";
-      nuf = "sudo nix flake update --flake ~/Projects/Dotfiles/nixos-dotfiles";
+      nuf = "nix flake update --flake ~/Projects/Dotfiles/nixos-dotfiles";
       ngc = "sudo nix-collect-garbage -d";
 
       # Navigazione
@@ -261,17 +199,6 @@ in
     XCURSOR_SIZE = 20;             # applicazione corretta cursore
   };
 
-  # ── Hermes Agent ─────────────────────────────────────────────────────────────
-
-  home.activation.hermesEnv = config.lib.dag.entryAfter ["writeBoundary"] ''
-    mkdir -p $HOME/.hermes
-    if [ ! -f $HOME/.hermes/.env ]; then
-      ${pkgs.pass}/bin/pass show openrouter/hermes-key > $HOME/.hermes/.env.tmp 2>/dev/null \
-        && echo "OPENROUTER_API_KEY=$(cat $HOME/.hermes/.env.tmp)" > $HOME/.hermes/.env \
-        && rm $HOME/.hermes/.env.tmp
-    fi
-  '';
-
   # ── Aggiunte Path ─────────────────────────────────────────────
 
   # home.sessionPath = [
@@ -321,9 +248,10 @@ in
 
   # -- Software per utente -----------------------------------------------------
 
-  home.packages = with pkgs; [
+  home.packages = (with pkgs; [
     # Browser
     zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
+    # helium
 
     # Editor
     kitty
@@ -364,19 +292,9 @@ in
     typst
     pandoc
 
-    # Progettazione di sistemi
-    visualParadigm
-
     # Programmazione generale
-    (hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
-      postFixup = (old.postFixup or "") + ''
-        for program in hermes hermes-agent hermes-acp; do
-          wrapProgram "$out/bin/$program" \
-            --prefix PYTHONPATH : "${hermesStateSupport}/${pkgs.python312.sitePackages}"
-        done
-      '';
-    }))
-    codex
+    hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default
+    hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.desktop
     nil
     gcc
     gnumake
@@ -393,5 +311,9 @@ in
     # jdt-language-server
     tinymist
     clang-tools
+  ]) ++ pkgs.lib.optionals enableVisualParadigm [
+    visualParadigm
+  ] ++ pkgs.lib.optionals enableCodex [
+    codexPackage
   ];
 }
