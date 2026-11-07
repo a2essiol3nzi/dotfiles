@@ -7,14 +7,14 @@ Welcome to my personal collection of configuration files for Arch Linux. This re
 Here are some snapshots of the setup:
 
 <p align="center">
-  <img src="images/setup-130326.png" alt="Latest Setup" width="800px">
+  <img src="images/setup-030726.png" alt="Latest Setup" width="800px">
 </p>
 
 <details>
   <summary>More Screenshots</summary>
   
   ### Previous Iterations
-  ![Setup 03-07-26](images/setup-030726.png)
+  ![Setup 13-03-26](images/setup-130326.png)
   ![Setup 23-01-26](images/setup-230126.png)
   ![Setup 04-01-26](images/setup-040126.png)
   ![Setup 27-12-25](images/setup-271225.png)
@@ -54,7 +54,7 @@ These dotfiles are organized to be easily managed.
 
 ## Wallpapers!
 
-I (finally) managed to compress my [wallpapers](wallpapers). So, enjoy!
+I managed to compress my [wallpapers](wallpapers). So, enjoy!
 
 ---
 *Declare and forget.*
